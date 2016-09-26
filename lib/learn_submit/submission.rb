@@ -168,7 +168,7 @@ module LearnSubmit
       url = dot_learn['after_ide_submission']
 
       File.open("#{ide_user_home}/.fs_changes.log", 'a') do |f|
-        f.puts "#{path} LEARN_SUBMIT #{url}"
+        f.puts [path, "LEARN_SUBMIT", url].join(" || ")
       end
     end
   end
