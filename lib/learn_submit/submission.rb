@@ -123,7 +123,7 @@ module LearnSubmit
               repo_name: repo_name,
               branch_name: branch_name,
               message: message,
-              ide_container: ide_container?
+              additional_params: { ide_container: ide_container?  }
             )
           end
         rescue Timeout::Error
