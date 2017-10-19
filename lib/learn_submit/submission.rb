@@ -119,7 +119,12 @@ module LearnSubmit
 
         begin
           pr_response = Timeout::timeout(15) do
-            client.issue_pull_request(repo_name: repo_name, branch_name: branch_name, message: message)
+            client.issue_pull_request(
+              repo_name: repo_name,
+              branch_name: branch_name,
+              message: message,
+              ide_container: ide_container?
+            )
           end
         rescue Timeout::Error
           if retries > 0
@@ -161,9 +166,13 @@ module LearnSubmit
       end
     end
 
+    def ide_container?
+      ENV['IDE_CONTAINER'] == 'true'
+    end
+
     def after_ide_submission(repo_name)
       return unless dot_learn && dot_learn['after_ide_submission']
-      return unless ENV['IDE_CONTAINER'] == 'true'
+      return unless ide_container?
 
       ide_user_home = "/home/#{ENV['USER']}"
 
