@@ -119,7 +119,12 @@ module LearnSubmit
 
         begin
           pr_response = Timeout::timeout(15) do
-            client.issue_pull_request(repo_name: repo_name, branch_name: branch_name, message: message)
+            client.issue_pull_request(
+              repo_name: repo_name,
+              branch_name: branch_name,
+              message: message,
+              additional_params: { ide_container: ide_container?  }
+            )
           end
         rescue Timeout::Error
           if retries > 0
@@ -161,30 +166,21 @@ module LearnSubmit
       end
     end
 
+    def ide_container?
+      ENV['IDE_CONTAINER'] == 'true'
+    end
+
     def after_ide_submission(repo_name)
       return unless dot_learn && dot_learn['after_ide_submission']
-      return unless ENV['IDE_CONTAINER'] == 'true'
-
-      ide_user_home = "/home/#{ENV['USER']}"
+      return unless ide_container?
 
       payload = {
         command: 'after_ide_submission',
         url: dot_learn['after_ide_submission']
       }
 
-      File.open("#{ide_user_home}/.custom_commands.log", 'a') do |f|
+      File.open("/home/#{ENV['USER']}/.custom_commands.log", 'a') do |f|
         f.puts payload.to_json
-      end
-
-      # TODO: the following can be removed when IDE versions <2.0 are no
-      # longer supported. There is no '.fs_changes.log' for users on >2.0.
-      if File.exist?("#{ide_user_home}/.fs_changes.log")
-        path = "#{ide_user_home}/code/labs/#{repo_name}/"
-        url = dot_learn['after_ide_submission']
-
-        File.open("#{ide_user_home}/.fs_changes.log", 'a') do |f|
-          f.puts "#{path} LEARN_SUBMIT #{url}"
-        end
       end
     end
   end
